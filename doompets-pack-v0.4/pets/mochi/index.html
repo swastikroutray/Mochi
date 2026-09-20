@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Mochi</title>
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <div id="pet-root" class="state-normal" aria-label="Mochi desktop pet">
+    <div id="bubble" class="bubble">hello human</div>
+
+    <div id="cat-hitbox" class="cat-hitbox">
+      <svg class="cat" viewBox="0 0 240 260" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="black cartoon cat">
+        <defs>
+          <clipPath id="headClip">
+            <ellipse cx="120" cy="96" rx="86" ry="58"/>
+          </clipPath>
+        </defs>
+
+        <!-- curled tail, intentionally behind the body -->
+        <path class="tail" d="M164 236 C188 227 184 176 173 161 C163 147 176 122 195 126 C212 130 211 153 196 157 C186 160 184 151 190 146"/>
+
+        <!-- simple long body like the supplied reference -->
+        <path class="body" d="M87 118 C66 142 66 203 63 232 C62 246 73 255 92 255 H148 C167 255 178 246 177 232 C174 199 173 145 151 119 Z"/>
+
+        <!-- head -->
+        <path class="head" d="M42 76 L52 10 L94 48 C109 43 131 43 146 48 L188 10 L198 76 C203 110 174 136 120 137 C66 136 37 110 42 76 Z"/>
+
+        <!-- eyes -->
+        <ellipse class="eye-white eye-left" cx="91" cy="88" rx="21" ry="27"/>
+        <ellipse class="eye-white eye-right" cx="149" cy="88" rx="21" ry="27"/>
+        <ellipse class="pupil pupil-left" cx="95" cy="90" rx="7" ry="20"/>
+        <ellipse class="pupil pupil-right" cx="145" cy="90" rx="7" ry="20"/>
+
+        <!-- tiny nose/mouth -->
+        <path class="nose" d="M116 111 Q120 108 124 111 L120 116 Z"/>
+        <path class="mouth" d="M120 115 Q113 120 108 117 M120 115 Q127 120 132 117"/>
+
+        <!-- highlight controlled by CSS -->
+        <circle class="eye-glint" cx="93" cy="82" r="3"/>
+        <circle class="eye-glint" cx="147" cy="82" r="3"/>
+      </svg>
+    </div>
+  </div>
+
+  <script src="qrc:///qtwebchannel/qwebchannel.js"></script>
+  <script src="./script.js"></script>
+</body>
+</html>

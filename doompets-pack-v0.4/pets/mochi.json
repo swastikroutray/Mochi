@@ -1,0 +1,24 @@
+{
+  "name": "Mochi",
+  "species": "cat",
+  "version": "0.4.0",
+  "ui": "pets/mochi",
+  "messages": {
+    "normal": [
+      "hello human",
+      "what are we building today?"
+    ],
+    "concerned": [
+      "that scroll has been going on for a while...",
+      "one more short? really?"
+    ],
+    "angry": [
+      "bro. close the tab.",
+      "I am literally a cat and even I have better things to do."
+    ],
+    "happy": [
+      "nice focus session!",
+      "look at you being productive!"
+    ]
+  }
+}
