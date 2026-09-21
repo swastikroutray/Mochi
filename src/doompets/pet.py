@@ -1,14 +1,14 @@
 from __future__ import annotations
 
-import json
 from pathlib import Path
+from typing import Optional
 
 from PySide6.QtCore import QObject, QPoint, Qt, QUrl, Signal, Slot
-from PySide6.QtGui import QColor, QKeyEvent, QWheelEvent
+from PySide6.QtGui import QColor
 from PySide6.QtWebChannel import QWebChannel
 from PySide6.QtWebEngineCore import QWebEngineSettings
 from PySide6.QtWebEngineWidgets import QWebEngineView
-from PySide6.QtWidgets import QApplication, QSizePolicy, QWidget
+from PySide6.QtWidgets import QApplication, QWidget
 
 
 class PetBridge(QObject):
@@ -25,11 +25,7 @@ class PetBridge(QObject):
     def move_pet(self, dx: float, dy: float) -> None:
         """Move the native desktop window by a JS-provided delta."""
         current = self.window.pos()
-
-        self.window.move(
-            current.x() + round(dx),
-            current.y() + round(dy),
-        )
+        self.window.move(current.x() + round(dx), current.y() + round(dy))
 
     @Slot()
     def begin_drag(self) -> None:
@@ -40,56 +36,14 @@ class PetBridge(QObject):
         self.drag_finished.emit()
 
 
-class PetWebView(QWebEngineView):
-    """Web view that prevents browser-style zooming."""
-
-    def wheelEvent(self, event: QWheelEvent) -> None:
-        # Block Ctrl + mouse-wheel zoom.
-        if event.modifiers() & Qt.ControlModifier:
-            event.accept()
-            return
-
-        super().wheelEvent(event)
-
-    def keyPressEvent(self, event: QKeyEvent) -> None:
-        # Block common browser zoom shortcuts:
-        # Ctrl + Plus
-        # Ctrl + Minus
-        # Ctrl + Equals
-        # Ctrl + 0
-        if event.modifiers() & Qt.ControlModifier:
-            if event.key() in (
-                Qt.Key_Plus,
-                Qt.Key_Minus,
-                Qt.Key_Equal,
-                Qt.Key_0,
-            ):
-                event.accept()
-                return
-
-        super().keyPressEvent(event)
-
-
 class PetWindow(QWidget):
     """Transparent, always-on-top desktop window containing the HTML/CSS pet."""
 
-    PET_WIDTH = 170
-    PET_HEIGHT = 140
-
     def __init__(self, pet_config: dict):
         super().__init__()
-
         self.pet_config = pet_config
         self.current_state = "normal"
-
-        # True only after the HTML page has fully loaded.
-        self._page_ready = False
-
-        self._drag_offset: QPoint | None = None
-
-        # ---------------------------------
-        # Window configuration
-        # ---------------------------------
+        self._drag_offset: Optional[QPoint] = None
 
         self.setWindowFlags(
             Qt.FramelessWindowHint
@@ -100,84 +54,29 @@ class PetWindow(QWidget):
 
         self.setAttribute(Qt.WA_TranslucentBackground)
         self.setAttribute(Qt.WA_ShowWithoutActivating)
+        self.resize(220, 180)
 
-        # Completely fixed native window size.
-        self.setFixedSize(
-            self.PET_WIDTH,
-            self.PET_HEIGHT,
-        )
-
-        self.setSizePolicy(
-            QSizePolicy.Fixed,
-            QSizePolicy.Fixed,
-        )
-
-        # ---------------------------------
-        # Web view
-        # ---------------------------------
-
-        self.view = PetWebView(self)
-
-        # Keep WebEngine zoom at 100%.
-        self.view.setZoomFactor(1.0)
-
-        self.view.setGeometry(
-            0,
-            0,
-            self.PET_WIDTH,
-            self.PET_HEIGHT,
-        )
-
-        self.view.setAttribute(
-            Qt.WA_TranslucentBackground
-        )
-
-        self.view.setStyleSheet(
-            "background: transparent;"
-        )
-
+        self.view = QWebEngineView(self)
+        self.view.setGeometry(self.rect())
+        self.view.setAttribute(Qt.WA_TranslucentBackground)
+        self.view.setStyleSheet("background: transparent;")
         self.view.settings().setAttribute(
             QWebEngineSettings.ShowScrollBars,
-            False,
+            False
         )
-
         self.view.settings().setAttribute(
             QWebEngineSettings.LocalContentCanAccessFileUrls,
-            True,
+            True
         )
-
-        self.view.setContextMenuPolicy(
-            Qt.NoContextMenu
-        )
-
-        # ---------------------------------
-        # Transparent page
-        # ---------------------------------
+        self.view.setContextMenuPolicy(Qt.NoContextMenu)
 
         page = self.view.page()
-
-        page.setBackgroundColor(
-            QColor(0, 0, 0, 0)
-        )
-
-        # ---------------------------------
-        # Python <-> JavaScript bridge
-        # ---------------------------------
+        page.setBackgroundColor(QColor(0, 0, 0, 0))
 
         self.bridge = PetBridge(self)
-
-        self.channel = QWebChannel(page)
-
-        self.channel.registerObject(
-            "doompets",
-            self.bridge,
-        )
-
-        page.setWebChannel(self.channel)
-
-        # ---------------------------------
-        # Load HTML
-        # ---------------------------------
+        self.channel = QWebChannel(self.view.page())
+        self.channel.registerObject("doompets", self.bridge)
+        self.view.page().setWebChannel(self.channel)
 
         html_path = (
             Path(__file__).resolve().parents[2]
@@ -191,70 +90,39 @@ class PetWindow(QWidget):
                 f"Pet UI not found: {html_path}"
             )
 
-        # IMPORTANT:
-        # Connect BEFORE loading the page.
-        self.view.loadFinished.connect(
-            self._on_page_loaded
-        )
-
         self.view.load(
-            QUrl.fromLocalFile(
-                str(html_path)
-            )
+            QUrl.fromLocalFile(str(html_path))
         )
 
-    # ---------------------------------
-    # Page loading
-    # ---------------------------------
+        self.view.installEventFilter(self)
 
-    def _on_page_loaded(self, ok: bool) -> None:
-        """Called when the HTML page finishes loading."""
-
-        if not ok:
-            print(
-                "DoomPets: Failed to load pet UI."
-            )
-            return
-
-        self._page_ready = True
-
-        # JavaScript is now safe to call.
         self._send_config_once_loaded()
 
-    def _send_config_once_loaded(self) -> None:
-        """Send pet configuration to the JavaScript UI."""
-
-        if not self._page_ready:
-            return
-
-        messages = self.pet_config.get(
-            "messages",
-            {},
+        self.view.loadFinished.connect(
+            lambda _ok: self._send_config_once_loaded()
         )
 
-        payload = json.dumps(messages)
+    def _send_config_once_loaded(self) -> None:
+        import json
 
-        self.view.page().runJavaScript(
+        payload = json.dumps(
+            self.pet_config.get("messages", {})
+        )
+
+        js = (
             f"window.doompetsSetMessages({payload});"
         )
 
-        # Restore current state.
-        self.set_state(
-            self.current_state
-        )
+        self.view.page().runJavaScript(js)
 
-    # ---------------------------------
-    # State
-    # ---------------------------------
+        self.set_state(self.current_state)
+
+    def resizeEvent(self, event) -> None:  # noqa: N802
+        super().resizeEvent(event)
+        self.view.setGeometry(self.rect())
 
     def set_state(self, state: str) -> None:
-        """Change pet state and its speech bubble."""
-
         self.current_state = state
-
-        # Never call JS before page load.
-        if not self._page_ready:
-            return
 
         messages = (
             self.pet_config
@@ -262,55 +130,18 @@ class PetWindow(QWidget):
             .get(state, ["..."])
         )
 
-        message = (
-            messages[0]
-            if messages
-            else "..."
-        )
+        message = messages[0] if messages else "..."
 
-        state_json = json.dumps(state)
-        message_json = json.dumps(message)
+        import json
 
         self.view.page().runJavaScript(
             f"window.doompetsSetState("
-            f"{state_json}, "
-            f"{message_json}"
+            f"{json.dumps(state)}, "
+            f"{json.dumps(message)}"
             f");"
         )
 
-    # ---------------------------------
-    # Fixed size
-    # ---------------------------------
-
-    def resizeEvent(self, event) -> None:
-        """Keep the WebEngine exactly the size of the pet window."""
-
-        super().resizeEvent(event)
-
-        self.view.setGeometry(
-            0,
-            0,
-            self.PET_WIDTH,
-            self.PET_HEIGHT,
-        )
-
-        # Prevent any external resize attempt.
-        if (
-            self.width() != self.PET_WIDTH
-            or self.height() != self.PET_HEIGHT
-        ):
-            self.setFixedSize(
-                self.PET_WIDTH,
-                self.PET_HEIGHT,
-            )
-
-    # ---------------------------------
-    # Position
-    # ---------------------------------
-
     def place_bottom_right(self) -> None:
-        """Place pet at bottom-right of the primary screen."""
-
         screen = (
             QApplication
             .primaryScreen()
@@ -318,11 +149,6 @@ class PetWindow(QWidget):
         )
 
         self.move(
-            screen.right()
-            - self.width()
-            - 24,
-
-            screen.bottom()
-            - self.height()
-            - 24,
+            screen.right() - self.width() - 24,
+            screen.bottom() - self.height() - 24,
         )

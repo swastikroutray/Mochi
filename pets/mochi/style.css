@@ -5,15 +5,11 @@
   --pupil: #171717;
   --bubble: rgba(20, 20, 24, 0.94);
   --accent: #ffffff;
-  --scale: 0.75;
+  --scale: 1;
 }
 
-* {
-  box-sizing: border-box;
-}
-
-html,
-body {
+* { box-sizing: border-box; }
+html, body {
   margin: 0;
   width: 100%;
   height: 100%;
@@ -22,13 +18,7 @@ body {
   user-select: none;
 }
 
-body {
-  font-family: Inter, Segoe UI, Arial, sans-serif;
-}
-
-/* =========================
-   ROOT
-   ========================= */
+body { font-family: Inter, Segoe UI, Arial, sans-serif; }
 
 #pet-root {
   position: relative;
@@ -37,114 +27,70 @@ body {
   transform-origin: center bottom;
 }
 
-/* =========================
-   SPEECH BUBBLE
-   ========================= */
-
 .bubble {
   position: absolute;
   top: 4px;
   left: 50%;
   transform: translateX(-50%);
-
   max-width: 190px;
   padding: 7px 10px;
-
   border-radius: 12px;
   background: var(--bubble);
   color: white;
-
   font-size: 11px;
   line-height: 1.25;
   text-align: center;
   white-space: nowrap;
-
   pointer-events: none;
   opacity: 0.96;
 }
 
 .bubble::after {
   content: "";
-
   position: absolute;
   left: 50%;
   bottom: -6px;
-
   transform: translateX(-50%);
-
   border: 6px solid transparent;
   border-top-color: var(--bubble);
   border-bottom: 0;
 }
 
-/* =========================
-   CAT
-   ========================= */
-
 .cat-hitbox {
   position: absolute;
-
   left: 50%;
   bottom: 0;
-
   width: 135px;
   height: 145px;
-
   transform: translateX(-50%) scale(var(--scale));
   transform-origin: center bottom;
-
   cursor: grab;
 }
 
-.cat-hitbox:active {
-  cursor: grabbing;
-}
+.cat-hitbox:active { cursor: grabbing; }
 
 .cat {
   width: 100%;
   height: 100%;
-
   overflow: visible;
-
-  filter: drop-shadow(0 8px 5px rgba(0, 0, 0, 0.18));
-
+  filter: drop-shadow(0 8px 5px rgba(0,0,0,.18));
   animation: bob 2.4s ease-in-out infinite;
 }
 
-.head,
-.body {
-  fill: var(--fur);
-}
-
+.head, .body { fill: var(--fur); }
 .tail {
   fill: none;
   stroke: var(--fur);
   stroke-width: 18;
   stroke-linecap: round;
   stroke-linejoin: round;
-
   animation: tail-idle 2.5s ease-in-out infinite;
-
   transform-origin: 174px 166px;
 }
-
-.eye-white {
-  fill: var(--eye);
-}
-
-.pupil {
-  fill: var(--pupil);
-}
-
-.eye-glint {
-  fill: white;
-  opacity: 0.85;
-}
-
-.nose {
-  fill: var(--eye);
-}
-
+.eye-white { fill: var(--eye); }
+.pupil { fill: var(--pupil); }
+.eye-glint { fill: white; opacity: .85; }
+.nose { fill: var(--eye); }
 .mouth {
   fill: none;
   stroke: var(--eye);
@@ -152,100 +98,68 @@ body {
   stroke-linecap: round;
 }
 
-/* =========================
-   EXPRESSIONS
-   ========================= */
+/* Expressions */
+.state-concerned .eye-white { transform: scaleY(.94); }
+.state-concerned .bubble { letter-spacing: .05px; }
+.state-angry .pupil { transform: scaleX(.72); }
+.state-angry .head { transform: translateY(2px); }
+.state-angry .tail { animation-duration: .55s; }
+.state-happy .eye-glint { opacity: 1; }
+.state-happy .cat { animation-duration: 1.1s; }
 
-.state-concerned .eye-white {
-  transform: scaleY(0.94);
+.state-angry .pupil-left { transform-origin: 95px 90px; transform: rotate(-7deg) scaleX(.72); }
+.state-angry .pupil-right { transform-origin: 145px 90px; transform: rotate(7deg) scaleX(.72); }
+
+@keyframes bob {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
 }
 
-.state-concerned .bubble {
-  letter-spacing: 0.05px;
+@keyframes tail-idle {
+  0%, 100% { transform: rotate(0deg); }
+  50% { transform: rotate(5deg); }
 }
 
-.state-angry .pupil {
-  transform: scaleX(0.72);
+@keyframes blink {
+  0%, 92%, 100% { transform: scaleY(1); }
+  95% { transform: scaleY(.08); }
 }
 
-.state-angry .head {
-  transform: translateY(2px);
-}
+.eye-white { animation: blink 5.2s infinite; transform-box: fill-box; transform-origin: center; }
 
-.state-angry .tail {
-  animation-duration: 0.55s;
-}
+/* Designer note: edit the variables at :root first. */
 
-.state-angry .pupil-left {
-  transform-origin: 95px 90px;
-  transform: rotate(-7deg) scaleX(0.72);
-}
-
-.state-angry .pupil-right {
-  transform-origin: 145px 90px;
-  transform: rotate(7deg) scaleX(0.72);
-}
-
-.state-happy .eye-glint {
-  opacity: 1;
-}
-
-.state-happy .cat {
-  animation-duration: 1.1s;
-}
 
 /* =========================
-   BLINKING
-   ========================= */
-
-.eye-white {
-  animation: blink 5.2s infinite;
-
-  transform-box: fill-box;
-  transform-origin: center;
-}
-
-/* =========================
-   PETTING
+   INTERACTIONS
    ========================= */
 
 #pet-root.petting::after {
   content: "♥";
-
   position: absolute;
   left: 50%;
   top: 26px;
-
   transform: translateX(-50%);
-
   color: #ff718a;
   font-size: 16px;
   line-height: 1;
-
   pointer-events: none;
-
   animation: heart-float 0.9s ease-in-out infinite;
 }
 
 #pet-root.petting .cat {
-  animation: pet-purr 1.4s ease-in-out infinite;
+  animation: pet-purr 0.42s ease-in-out infinite;
 }
 
 #pet-root.petting .head {
-  animation: pet-head 1.8s ease-in-out infinite;
+  animation: pet-head 0.75s ease-in-out infinite;
+  transform-box: fill-box;
+  transform-origin: center bottom;
 }
 
 #pet-root.petting .tail {
-  animation: tail-pet 1.3s ease-in-out infinite;
+  animation: tail-pet 0.48s ease-in-out infinite;
 }
-
-#pet-root.petting .eye-white {
-  animation: happy-eyes 1.2s ease-in-out infinite;
-}
-
-/* =========================
-   DRAGGING
-   ========================= */
 
 #pet-root.dragging .cat {
   animation: pick-up 0.45s ease-out forwards;
@@ -255,259 +169,111 @@ body {
   animation-duration: 0.32s;
 }
 
-/* =========================
-   CLICK INTERACTION
-   ========================= */
-
 #pet-root.interacting .cat {
-  animation: interact-hop 0.55s cubic-bezier(0.2, 0.8, 0.25, 1);
+  animation: interact-hop 0.55s cubic-bezier(.2,.8,.25,1);
 }
 
 #pet-root.interacting .tail {
   animation: tail-excited 0.28s ease-in-out 2;
 }
 
-/* =========================
-   DOUBLE CLICK / SPECIAL
-   ========================= */
-
 #pet-root.special .cat {
-  animation: special-zoomies 1.05s cubic-bezier(0.25, 0.8, 0.3, 1);
+  animation: special-zoomies 1.05s cubic-bezier(.25,.8,.3,1);
 }
 
 #pet-root.special .tail {
   animation: tail-zoomies 0.22s ease-in-out infinite;
 }
 
-/* =========================
-   CURSOR DIRECTION
-   ========================= */
-
-/* Look left */
-
+/* Cursor direction: the eyes lead, while the head gives a subtle cue. */
 #pet-root.look-left .pupil {
   transform: translateX(-4px);
+}
+
+#pet-root.look-right .pupil {
+  transform: translateX(4px);
+}
+
+#pet-root.look-up .pupil {
+  transform: translateY(-5px);
 }
 
 #pet-root.look-left .eye-glint {
   transform: translateX(-2px);
 }
 
-#pet-root.look-left .head {
-  transform: rotate(-2deg) translateX(-1px);
-
-  transform-box: fill-box;
-  transform-origin: center bottom;
-}
-
-/* Look right */
-
-#pet-root.look-right .pupil {
-  transform: translateX(4px);
-}
-
 #pet-root.look-right .eye-glint {
   transform: translateX(2px);
 }
 
-#pet-root.look-right .head {
-  transform: rotate(2deg) translateX(1px);
-
+#pet-root.look-left .head {
+  transform: rotate(-2deg) translateX(-1px);
   transform-box: fill-box;
   transform-origin: center bottom;
 }
 
-/* Look up */
-
-#pet-root.look-up .pupil {
-  transform: translateY(-5px);
+#pet-root.look-right .head {
+  transform: rotate(2deg) translateX(1px);
+  transform-box: fill-box;
+  transform-origin: center bottom;
 }
 
 #pet-root.look-up .head {
   transform: translateY(-2px) rotate(-1deg);
-
   transform-box: fill-box;
   transform-origin: center bottom;
 }
 
-/* =========================
-   ANIMATIONS
-   ========================= */
-
-@keyframes bob {
-  0%,
-  100% {
-    transform: translateY(0);
-  }
-
-  50% {
-    transform: translateY(-4px);
-  }
-}
-
-@keyframes tail-idle {
-  0%,
-  100% {
-    transform: rotate(0deg);
-  }
-
-  50% {
-    transform: rotate(5deg);
-  }
-}
-
-@keyframes blink {
-  0%,
-  92%,
-  100% {
-    transform: scaleY(1);
-  }
-
-  95% {
-    transform: scaleY(0.08);
-  }
-}
-
 @keyframes pet-purr {
-  0%,
-  100% {
-    transform: translateY(0) scale(1);
-  }
-
-  25% {
-    transform: translateY(-1px) scale(1.006, 0.994);
-  }
-
-  50% {
-    transform: translateY(0) scale(0.996, 1.004);
-  }
-
-  75% {
-    transform: translateY(-1px) scale(1.006, 0.994);
-  }
+  0%, 100% { transform: translateY(0) scale(1); }
+  25% { transform: translateY(-1px) scale(1.006, .994); }
+  50% { transform: translateY(0) scale(.996, 1.004); }
+  75% { transform: translateY(-1px) scale(1.006, .994); }
 }
 
 @keyframes pet-head {
-  0%,
-  100% {
-    transform: rotate(0deg) translateY(0);
-  }
-
-  50% {
-    transform: rotate(-4deg) translateY(-1px);
-  }
+  0%, 100% { transform: rotate(0deg) translateY(0); }
+  50% { transform: rotate(-4deg) translateY(-1px); }
 }
 
 @keyframes tail-pet {
-  0%,
-  100% {
-    transform: rotate(-3deg);
-  }
-
-  50% {
-    transform: rotate(12deg);
-  }
-}
-
-@keyframes happy-eyes {
-  0%,
-  100% {
-    transform: scaleY(1);
-  }
-
-  50% {
-    transform: scaleY(0.25);
-  }
+  0%, 100% { transform: rotate(-3deg); }
+  50% { transform: rotate(12deg); }
 }
 
 @keyframes pick-up {
-  0% {
-    transform: translateY(0) rotate(0deg) scale(1);
-  }
-
-  45% {
-    transform: translateY(-5px) rotate(-2deg) scale(1.02);
-  }
-
-  100% {
-    transform: translateY(-2px) rotate(0deg) scale(1.01);
-  }
+  0% { transform: translateY(0) rotate(0deg) scale(1); }
+  45% { transform: translateY(-5px) rotate(-2deg) scale(1.02); }
+  100% { transform: translateY(-2px) rotate(0deg) scale(1.01); }
 }
 
 @keyframes interact-hop {
-  0% {
-    transform: translateY(0);
-  }
-
-  35% {
-    transform: translateY(-10px);
-  }
-
-  70% {
-    transform: translateY(2px);
-  }
-
-  100% {
-    transform: translateY(0);
-  }
+  0% { transform: translateY(0); }
+  35% { transform: translateY(-10px); }
+  70% { transform: translateY(2px); }
+  100% { transform: translateY(0); }
 }
 
 @keyframes tail-excited {
-  0%,
-  100% {
-    transform: rotate(-4deg);
-  }
-
-  50% {
-    transform: rotate(18deg);
-  }
+  0%, 100% { transform: rotate(-4deg); }
+  50% { transform: rotate(18deg); }
 }
 
 @keyframes special-zoomies {
-  0% {
-    transform: translateY(0) rotate(0deg) scale(1);
-  }
-
-  20% {
-    transform: translateY(-9px) rotate(-3deg) scale(1.02);
-  }
-
-  45% {
-    transform: translateY(0) rotate(4deg) scale(1);
-  }
-
-  70% {
-    transform: translateY(-7px) rotate(-4deg) scale(1.025);
-  }
-
-  100% {
-    transform: translateY(0) rotate(0deg) scale(1);
-  }
+  0% { transform: translateY(0) rotate(0deg) scale(1); }
+  20% { transform: translateY(-9px) rotate(-3deg) scale(1.02); }
+  45% { transform: translateY(0) rotate(4deg) scale(1); }
+  70% { transform: translateY(-7px) rotate(-4deg) scale(1.025); }
+  100% { transform: translateY(0) rotate(0deg) scale(1); }
 }
 
 @keyframes tail-zoomies {
-  0%,
-  100% {
-    transform: rotate(-10deg);
-  }
-
-  50% {
-    transform: rotate(22deg);
-  }
+  0%, 100% { transform: rotate(-10deg); }
+  50% { transform: rotate(22deg); }
 }
 
 @keyframes heart-float {
-  0% {
-    opacity: 0;
-    transform: translate(-50%, 4px) scale(0.85);
-  }
-
-  25% {
-    opacity: 1;
-  }
-
-  100% {
-    opacity: 0;
-    transform: translate(-50%, -16px) scale(1.05);
-  }
+  0% { opacity: 0; transform: translate(-50%, 4px) scale(.85); }
+  25% { opacity: 1; }
+  100% { opacity: 0; transform: translate(-50%, -16px) scale(1.05); }
 }

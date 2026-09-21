@@ -17,17 +17,24 @@ const bubble = document.getElementById('bubble');
 const hitbox = document.getElementById('cat-hitbox');
 
 function setState(state, message) {
-  // Only swap the "state-*" class; preserve transient interaction classes
-  root.className = root.className
-    .split(' ')
-    .filter(cls => cls && !cls.startsWith('state-'))
-    .concat(`state-${state}`)
-    .join(' ');
+  // Update only the state class.
+  // Do NOT remove petting, dragging, interacting, etc.
+  Array.from(root.classList)
+    .filter(cls => cls.startsWith('state-'))
+    .forEach(cls => root.classList.remove(cls));
+
+  root.classList.add(`state-${state}`);
 
   root.dataset.state = state;
   root.dataset.stateMessage = message || '';
 
-  if (!root.classList.contains('petting') && !root.classList.contains('dragging') && !root.classList.contains('interacting') && !root.classList.contains('special')) {
+  // While hovering, keep the petting message.
+  if (
+    !root.classList.contains('petting') &&
+    !root.classList.contains('dragging') &&
+    !root.classList.contains('interacting') &&
+    !root.classList.contains('special')
+  ) {
     bubble.textContent = message || '';
     bubble.style.display = message ? 'block' : 'none';
   }
@@ -40,9 +47,17 @@ window.doompetsSetMessages = function(messages) {
 window.doompetsSetState = setState;
 
 function restoreStateMessage() {
+  const state = root.dataset.state || 'normal';
   const message = root.dataset.stateMessage || '';
   bubble.textContent = message;
   bubble.style.display = message ? 'block' : 'none';
+}
+
+function clearReactionClasses() {
+  root.classList.remove('interacting', 'special');
+  if (!dragging && !root.classList.contains('petting')) {
+    restoreStateMessage();
+  }
 }
 
 function showReaction(kind, message, duration = 1100) {
@@ -154,18 +169,19 @@ function handleDoubleClick(event) {
 }
 
 hitbox.addEventListener('pointerenter', () => {
-    if (dragging) return;
-
-    root.classList.remove('interacting', 'special');
+  if (!dragging) {
     root.classList.add('petting');
     bubble.textContent = 'purrr... ♥';
     bubble.style.display = 'block';
+  }
 });
 
 hitbox.addEventListener('pointerleave', () => {
-    // Stop petting immediately when the cursor leaves the cat
-    root.classList.remove('petting');
+  root.classList.remove('petting');
+  if (!dragging && !root.classList.contains('interacting') && !root.classList.contains('special')) {
     restoreStateMessage();
+  }
+  root.classList.remove('look-left', 'look-right', 'look-up', 'look-center');
 });
 
 hitbox.addEventListener('pointerdown', startPointer);
