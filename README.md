@@ -1,27 +1,26 @@
-# DoomPets 🐾
+# DoomPets
 
-A tiny open-source desktop pet that reacts to your computer habits and tries to stop doomscrolling.
+A small desktop pet that reacts to your computer habits and nudges you away from doomscrolling.
 
-## v0.4 — Interactive HTML/CSS Mochi
+## v0.4 — HTML/CSS Mochi
 
-Mochi is now rendered as **HTML + CSS + SVG + JavaScript** instead of being drawn with Python. This makes the pet much easier to redesign and lets contributors create their own pet packs.
+Mochi is now rendered with HTML, CSS, SVG, and JavaScript instead of being drawn in Python. This makes the pet easier to redesign and lets contributors build their own pet packs without touching the core engine.
 
-The reference style is a minimal black cartoon cat: pointed ears, large white eyes, compact body, and a curled tail.
+The reference design is a minimal black cartoon cat: pointed ears, large white eyes, a compact body, and a curled tail.
 
 ### Features
 
-- Transparent always-on-top desktop overlay
-- HTML/CSS/SVG cat with idle bob + blinking
-- Hover = petting/purring animation
-- Click = playful interaction
-- Double click = special reaction
-- Drag = pick up and move Mochi anywhere on the desktop
-- Cursor direction = Mochi looks left/right/up
-- States: normal, concerned, angry, happy
-- Active-window based doom/productive classification
-- Pet design files are easy to edit in VS Code
+- Transparent, always-on-top desktop overlay
+- HTML/CSS/SVG cat with idle bob and blinking
+- Hover triggers a petting/purring animation
+- Click and double-click trigger playful reactions
+- Drag to move Mochi anywhere on the desktop
+- Cursor tracking — Mochi looks left, right, or up depending on pointer position
+- Four states: normal, concerned, angry, happy
+- Active-window classification (doomscrolling vs. productive)
+- Pet packs are plain HTML/CSS/JS, editable in any code editor
 
-## Run locally on Windows
+## Installation (Windows)
 
 ```powershell
 python -m venv .venv
@@ -30,44 +29,33 @@ pip install -e .
 doompet
 ```
 
-The first install is larger than v0.2 because DoomPets now uses **PySide6-WebEngine** to render the HTML/CSS pet.
+The install is larger than v0.2 because DoomPets now depends on **PySide6-WebEngine** to render the pet.
 
-## Customize Mochi
+## Customizing Mochi
 
-Open:
+Pet files live in:
 
-```text
+```
 pets/mochi/index.html
 pets/mochi/style.css
 pets/mochi/script.js
 ```
 
-For a quick color change, edit the CSS variables at the top of `style.css`.
+- For colors, edit the CSS variables at the top of `style.css`.
+- For shape, edit the SVG paths in `index.html`.
+- For general design guidelines, see `pets/mochi/design.md`.
 
-For the shape, edit the SVG paths in `index.html`.
+## Project layout
 
-See `pets/mochi/design.md` for the design guide.
-
-## Project direction
-
-```text
+```
 doompets/
-├── engine             # Python desktop + behavior engine
+├── engine        # Python desktop app and behavior engine
 ├── pets/
-│   └── mochi/         # HTML/CSS/JS pet pack
+│   └── mochi/    # HTML/CSS/JS pet pack
 └── tests/
 ```
 
-The long-term goal is a community pet-pack ecosystem where people can publish cats, dogs, frogs, pandas, and other companions without changing the core engine.
-
-## Roadmap
-
-- [ ] Real scrolling detection instead of only active-window detection
-- [ ] Pet-pack manifest/spec
-- [ ] Sprite sheets / richer SVG animations
-- [ ] Settings dashboard
-- [ ] Persistent pet position
-- [ ] Cross-platform support
+The goal is a community pet-pack ecosystem — cats, dogs, frogs, pandas, and anything else — without requiring changes to the core engine.
 
 ## License
 
